@@ -1,14 +1,22 @@
-from typing import Callable
+from typing import Callable, Any
+from functools import wraps
 
 
 def cache(func: Callable) -> Callable:
+    cache_dict = {}
 
-    def inner(*args) -> Callable:
-        cache_date = {}
-        if args in cache_date:
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        kwargs_tuple = tuple(kwargs.items())
+        key = (args, kwargs_tuple)
+
+        if key in cache_dict:
             print("Getting from cache")
-        else:
-            print("Calculating new result")
-            cache_date[args] = func(*args)
-        return cache_date[args]
-    return inner
+            return cache_dict[key]
+
+        print("Calculating new result")
+        result = func(*args, **kwargs)
+        cache_dict[key] = result
+        return result
+
+    return wrapper
